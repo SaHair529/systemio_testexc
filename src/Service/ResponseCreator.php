@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ResponseCreator
 {
-    public static function calculatePrice_invalidRequest(array $validationViolations): JsonResponse
+    public static function invalidRequest(array $validationViolations): JsonResponse
     {
         return new JsonResponse([
             'message' => 'Invalid request data',

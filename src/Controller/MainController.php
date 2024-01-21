@@ -20,21 +20,20 @@ class MainController extends AbstractController
     #[Route('/calculate-price', name: 'calculate_price', methods: 'POST')]
     public function calculatePrice(Request $request, PriceCalculatorService $calculatorService, RequestsValidator $requestsValidator)
     {
-        $requestData = json_decode($request->getContent(), true);
+        $requestData = json_decode($request->getContent(), true) ?? [];
         $validationViolations = $requestsValidator->validateCalculatePrice($requestData);
 
         if (!empty($validationViolations))
-            return ResponseCreator::calculatePrice_invalidRequest($validationViolations);
+            return ResponseCreator::invalidRequest($validationViolations);
     }
 
     #[Route('/purchase', name: 'purchase', methods: 'POST')]
-    public function purchase(Request $request, PurchaseService $purchaseService)
+    public function purchase(Request $request, PurchaseService $purchaseService, RequestsValidator $requestsValidator)
     {
-        $constraints = new Collection([
-            'product' => $this->productConstraints,
-            'taxNumber' => $this->taxNumberConstraints,
-            'couponCode' => $this->couponCodeConstraints,
-            'paymentProcessor' => $this->paymentProcessorConstraints
-        ]);
+        $requestData = json_decode($request->getContent(), true) ?? [];
+        $validationViolations = $requestsValidator->validatePurchase($requestData);
+
+        if (!empty($validationViolations))
+            return ResponseCreator::invalidRequest($validationViolations);
     }
 }

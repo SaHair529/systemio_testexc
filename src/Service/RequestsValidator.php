@@ -51,4 +51,22 @@ class RequestsValidator
 
         return $result;
     }
+
+    public function validatePurchase(array $requestData): array
+    {
+        $result = [];
+
+        $violations = $this->validator->validate($requestData, new Collection([
+            'product' => $this->productConstraints,
+            'taxNumber' => $this->taxNumberConstraints,
+            'couponCode' => $this->couponCodeConstraints,
+            'paymentProcessor' => $this->paymentProcessorConstraints
+        ]));
+
+        foreach ($violations as $violation) {
+            $result[$violation->getPropertyPath()] = $violation->getMessage();
+        }
+
+        return $result;
+    }
 }
