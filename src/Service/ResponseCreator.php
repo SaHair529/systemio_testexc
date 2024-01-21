@@ -14,4 +14,18 @@ class ResponseCreator
             'Invalid fields' => $validationViolations
         ], Response::HTTP_BAD_REQUEST);
     }
+
+    public static function paymentResultDependentResponse(bool $paymentResult): JsonResponse
+    {
+        return new JsonResponse([
+            'message' => $paymentResult ? 'Payment successful' : 'Payment failed'
+        ], $paymentResult ? Response::HTTP_OK : Response::HTTP_BAD_REQUEST);
+    }
+
+    public static function calculateResponse(int $price): JsonResponse
+    {
+        return new JsonResponse([
+            'price' => $price
+        ]);
+    }
 }

@@ -2,38 +2,52 @@
 
 namespace App\Controller;
 
+use App\PaymentService\ProcessorStrategy\PaymentProcessorStrategyFactory;
 use App\Service\PriceCalculatorService;
 use App\Service\PurchaseService;
 use App\Service\RequestsValidator;
 use App\Service\ResponseCreator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Validator\Constraints\Collection;
 
 class MainController extends AbstractController
 {
-    public function __construct()
-    {
-    }
+    private array $productPrices = [ # Не совсем понятно как по-другому реализовать без CRUD, поэтому просто закинул в массив
+        '1' => 100, # iphone
+        '2' => 20,  # Наушники
+        '3' => 10   # Чехол
+    ];
 
     #[Route('/calculate-price', name: 'calculate_price', methods: 'POST')]
-    public function calculatePrice(Request $request, PriceCalculatorService $calculatorService, RequestsValidator $requestsValidator)
+    public function calculatePrice(Request $request, RequestsValidator $requestsValidator): JsonResponse
     {
         $requestData = json_decode($request->getContent(), true) ?? [];
         $validationViolations = $requestsValidator->validateCalculatePrice($requestData);
 
         if (!empty($validationViolations))
             return ResponseCreator::invalidRequest($validationViolations);
+
+        # TODO Добавить расчет стоимость с учетом налогов и купонов
+
+        return ResponseCreator::calculateResponse($this->productPrices[$requestData['product']]);
     }
 
     #[Route('/purchase', name: 'purchase', methods: 'POST')]
-    public function purchase(Request $request, PurchaseService $purchaseService, RequestsValidator $requestsValidator)
+    public function purchase(Request $request, RequestsValidator $requestsValidator): JsonResponse
     {
         $requestData = json_decode($request->getContent(), true) ?? [];
         $validationViolations = $requestsValidator->validatePurchase($requestData);
 
         if (!empty($validationViolations))
             return ResponseCreator::invalidRequest($validationViolations);
+
+        # TODO Добавить расчет стоимость с учетом налогов и купонов
+
+        $paymentStrategy = PaymentProcessorStrategyFactory::createStrategy($requestData['paymentProcessor']);
+        $paymentResult = $paymentStrategy->process((float) $this->productPrices[$requestData['product']]);
+
+        return ResponseCreator::paymentResultDependentResponse($paymentResult);
     }
 }
