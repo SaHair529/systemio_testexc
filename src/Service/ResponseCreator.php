@@ -28,4 +28,11 @@ class ResponseCreator
             'price' => $price
         ]);
     }
+
+    public static function wrongTaxNumber()
+    {
+        return new JsonResponse([
+            'message' => 'Wrong tax number was sent'
+        ], Response::HTTP_BAD_REQUEST);
+    }
 }

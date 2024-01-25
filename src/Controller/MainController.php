@@ -29,9 +29,14 @@ class MainController extends AbstractController
         if (!empty($validationViolations))
             return ResponseCreator::invalidRequest($validationViolations);
 
-        # TODO Добавить расчет стоимость с учетом налогов и купонов
+        $resultPrice = PriceCalculatorService::calculatePriceByTaxNumber($this->productPrices[$requestData['product']], $requestData['taxNumber']);
+        if ($resultPrice === -1)
+            return ResponseCreator::wrongTaxNumber();
 
-        return ResponseCreator::calculateResponse($this->productPrices[$requestData['product']]);
+        if (isset($requestData['couponCode']))
+            PriceCalculatorService::calculatePriceByCoupon($resultPrice, $requestData['couponCode']);
+
+        return ResponseCreator::calculateResponse($resultPrice);
     }
 
     #[Route('/purchase', name: 'purchase', methods: 'POST')]
