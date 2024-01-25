@@ -14,12 +14,6 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class MainController extends AbstractController
 {
-    private array $productPrices = [ # Не совсем понятно как по-другому реализовать без CRUD, поэтому просто закинул в массив
-        '1' => 100, # iphone
-        '2' => 20,  # Наушники
-        '3' => 10   # Чехол
-    ];
-
     #[Route('/calculate-price', name: 'calculate_price', methods: 'POST')]
     public function calculatePrice(Request $request, RequestsValidator $requestsValidator): JsonResponse
     {
@@ -29,12 +23,9 @@ class MainController extends AbstractController
         if (!empty($validationViolations))
             return ResponseCreator::invalidRequest($validationViolations);
 
-        $resultPrice = PriceCalculatorService::calculatePriceByTaxNumber($this->productPrices[$requestData['product']], $requestData['taxNumber']);
+        $resultPrice = PriceCalculatorService::calculatePrice($requestData);
         if ($resultPrice === -1)
             return ResponseCreator::wrongTaxNumber();
-
-        if (isset($requestData['couponCode']))
-            $resultPrice = PriceCalculatorService::calculatePriceByCoupon($resultPrice, $requestData['couponCode']);
 
         return ResponseCreator::calculateResponse($resultPrice);
     }
@@ -48,10 +39,12 @@ class MainController extends AbstractController
         if (!empty($validationViolations))
             return ResponseCreator::invalidRequest($validationViolations);
 
-        # TODO Добавить расчет стоимость с учетом налогов и купонов
+        $resultPrice = PriceCalculatorService::calculatePrice($requestData);
+        if ($resultPrice === -1)
+            return ResponseCreator::wrongTaxNumber();
 
         $paymentStrategy = PaymentProcessorStrategyFactory::createStrategy($requestData['paymentProcessor']);
-        $paymentResult = $paymentStrategy->process((float) $this->productPrices[$requestData['product']]);
+        $paymentResult = $paymentStrategy->process((float) $resultPrice);
 
         return ResponseCreator::paymentResultDependentResponse($paymentResult);
     }

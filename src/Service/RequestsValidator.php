@@ -4,7 +4,7 @@ namespace App\Service;
 
 use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Constraints\Collection;
-use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Optional;
 use Symfony\Component\Validator\Constraints\Regex;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -12,7 +12,7 @@ class RequestsValidator
 {
     private Choice $productConstraints;
     private Regex $taxNumberConstraints;
-    private NotBlank $couponCodeConstraints;
+    private Optional $couponCodeConstraints;
     private Choice $paymentProcessorConstraints;
 
     public function __construct(private ValidatorInterface $validator)
@@ -27,7 +27,7 @@ class RequestsValidator
             'message' => 'Неверный формат налогового номера'
         ]);
 
-        $this->couponCodeConstraints = new NotBlank(['message' => 'Поле "couponCode" обязательно']);
+        $this->couponCodeConstraints = new Optional();
 
         $this->paymentProcessorConstraints = new Choice([
             'choices' => ['paypal', 'stripe'],

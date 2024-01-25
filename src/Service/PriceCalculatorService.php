@@ -4,6 +4,12 @@ namespace App\Service;
 
 class PriceCalculatorService
 {
+    private const PRODUCT_PRICES = [ # Не совсем понятно как по-другому реализовать без CRUD, поэтому просто закинул в массив
+        '1' => 100, # iphone
+        '2' => 20,  # Наушники
+        '3' => 10   # Чехол
+    ];
+
     private const COUPONS = [
         'F9'  => 9,  # Fixed
         'P20' => 20  # Percentage
@@ -15,6 +21,18 @@ class PriceCalculatorService
         'GR123456789' => 24,      # Greece
         'FRYY123456789' => 20     # France
     ];
+
+    public static function calculatePrice(array $requestData): int
+    {
+        $resultPrice = self::calculatePriceByTaxNumber(self::PRODUCT_PRICES[$requestData['product']], $requestData['taxNumber']);
+        if ($resultPrice === -1)
+            return $resultPrice;
+
+        if (isset($requestData['couponCode']))
+            $resultPrice = self::calculatePriceByCoupon($resultPrice, $requestData['couponCode']);
+
+        return $resultPrice;
+    }
 
     public static function calculatePriceByTaxNumber(int $price, string $taxNumber): int
     {
