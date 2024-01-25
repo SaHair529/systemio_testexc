@@ -34,7 +34,7 @@ class MainController extends AbstractController
             return ResponseCreator::wrongTaxNumber();
 
         if (isset($requestData['couponCode']))
-            PriceCalculatorService::calculatePriceByCoupon($resultPrice, $requestData['couponCode']);
+            $resultPrice = PriceCalculatorService::calculatePriceByCoupon($resultPrice, $requestData['couponCode']);
 
         return ResponseCreator::calculateResponse($resultPrice);
     }
